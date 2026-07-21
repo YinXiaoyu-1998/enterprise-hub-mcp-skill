@@ -42,7 +42,7 @@ The service exposes authenticated Streamable HTTP at `POST <Enterprise Hub URL>/
 ## Usage Notes
 
 - Do not provide or ask for an organization ID. The service derives organization scope from the authenticated employee and rejects hidden data through backend authorization.
-- Evidence search cursors are opaque, short-lived continuation tokens. To fetch the next page, pass the returned cursor back unchanged with the same query, filters, and limit. Restart the search on `INVALID_CURSOR` or `CURSOR_EXPIRED`.
+- Evidence search cursors are opaque, short-lived continuation tokens. To fetch the next page, pass `page.nextCursor` back unchanged as `cursor` with the same query, filters, and limit. Restart without a cursor on `INVALID_CURSOR`; on `CURSOR_EXPIRED`, explain the expiry and restart only if the user still wants more results.
 - Structured import retries should reuse an `idempotencyKey` only for the exact same file and metadata. Exact replay returns the original persisted `documentId`, `importBatchId`, and storage key instead of duplicating rows or objects.
 - `get_import_status` returns the same non-enumerating 404 for nonexistent, cross-org, disabled, or label-inaccessible import batches. Treat it as "not visible or missing" and do not infer hidden batch metadata.
 
