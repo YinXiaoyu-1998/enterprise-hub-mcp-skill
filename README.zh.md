@@ -46,6 +46,13 @@ ENTERPRISE_HUB_BASE_URL = "http://127.0.0.1:3000"
 
 `ENTERPRISE_HUB_BASE_URL` 是唯一 launcher 配置值。不要在 MCP 配置、环境变量、命令参数、文件或 skill 内容里写 bearer token、password、API key、OSS credential 或 service account。
 
+## 使用注意
+
+- 不要提供或询问组织 ID。组织边界由服务端从当前登录员工推导，隐藏数据由后端授权拒绝。
+- Evidence search 的 cursor 是不透明、短期有效的翻页 token。下一页必须沿用相同 query/filter/limit，并把 `page.nextCursor` 原样作为 cursor 传回；遇到 `INVALID_CURSOR` 可不带 cursor 重新开始，遇到 `CURSOR_EXPIRED` 则先说明 cursor 已过期，只有用户仍希望继续时才重新搜索。
+- 结构化导入只有在同一个文件和同一组 metadata 精确重试时才复用 `idempotencyKey`。精确重放会返回第一次持久化的 `documentId`、`importBatchId` 和 storage key，不会重复写入 rows 或 objects。
+- `get_import_status` 对不存在、跨组织、disabled 或标签不可见的批次返回同一种非枚举 404。只能把它当成“不可见或不存在”，不要推断隐藏批次的 metadata。
+
 ## 推荐 Codex 提示词
 
 ```text
@@ -90,6 +97,10 @@ Do not print raw tokens, do not ask for production credentials, and do not claim
 3. 调 `get_import_status`。
 4. 调 `list_structured_datasets`。
 5. 调 `query_structured_dataset` 做受控只读查询；不要发送 SQL。
+
+精确重试：如果同一 structured 文件上传时网络中断，可用原 `idempotencyKey` 重试。返回相同 `documentId` / `importBatchId` / storage key 表示重放成功，不代表重复导入。
+
+Evidence 翻页：如果 `search_document_evidence` 返回非空 cursor，且用户要继续看下一页，用相同 query/filter/limit 原样传回 cursor。不要修改、解码、长期保存或跨员工复用 cursor。
 
 权限隔离验证：
 
