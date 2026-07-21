@@ -49,6 +49,7 @@ ENTERPRISE_HUB_BASE_URL = "http://127.0.0.1:3000"
 ## 使用注意
 
 - 不要提供或询问组织 ID。组织边界由服务端从当前登录员工推导，隐藏数据由后端授权拒绝。
+- 对用户附加的文件或明确给出的本地路径，只读取该指定文件的原始字节，并机械地做 Base64 编码；不得重打、规范化、翻译或凭记忆重建内容。无法读取精确字节时，应要求用户重新附加文件。路径只留在客户端，不发送给服务端。
 - Evidence search 的 cursor 是不透明、短期有效的翻页 token。下一页必须沿用相同 query/filter/limit，并把 `page.nextCursor` 原样作为 cursor 传回；遇到 `INVALID_CURSOR` 可不带 cursor 重新开始，遇到 `CURSOR_EXPIRED` 则先说明 cursor 已过期，只有用户仍希望继续时才重新搜索。
 - 结构化导入只有在同一个文件和同一组 metadata 精确重试时才复用 `idempotencyKey`。精确重放会返回第一次持久化的 `documentId`、`importBatchId` 和 storage key，不会重复写入 rows 或 objects。
 - `get_import_status` 对不存在、跨组织、disabled 或标签不可见的批次返回同一种非枚举 404。只能把它当成“不可见或不存在”，不要推断隐藏批次的 metadata。
