@@ -8,8 +8,8 @@
 storage、Docker、worker、云资源或部署。服务职责仍属于主项目
 [SME_DATA_CENTER](https://github.com/YinXiaoyu-1998/SME_DATA_CENTER)。
 
-> Cutover 前状态：这是已批准的正式目标手册，不代表浏览器登录 launcher、npm 包或公开 MCP
-> 边界已经上线。当前实现和 cutover 工作以主仓库记录为准。
+> 在线服务状态：`enterprise-hub-mcp-launcher@0.1.0`、浏览器登录和公开 HTTPS MCP 边界已在
+> staging 一同部署。员工仍需完成真实登录与授权；Windows 桌面验收仍是发布门。
 
 ## 安装 Skill
 

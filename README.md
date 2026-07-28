@@ -10,9 +10,9 @@ Enterprise Hub API, database, Qdrant, storage, Docker, worker, cloud resources, 
 Those service responsibilities remain in
 [SME_DATA_CENTER](https://github.com/YinXiaoyu-1998/SME_DATA_CENTER).
 
-> Pre-cutover status: this is the approved official target runbook. It does not assert that the
-> browser-login launcher, npm package, or public MCP boundary is already deployed. The main
-> repository records the current implementation and cutover work.
+> Live-service status: `enterprise-hub-mcp-launcher@0.1.0`, browser login, and the public HTTPS MCP
+> boundary are deployed together in staging. Real employee login and authorization are still
+> required; Windows desktop acceptance remains a release gate.
 
 ## Install The Skill
 
