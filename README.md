@@ -134,8 +134,15 @@ agents sharing that OS-user secure store.
 
 - Backend authorization, not client filtering, determines visible organizations, labels, and
   resources. Do not provide organization IDs or infer hidden data.
+- For questions about Enterprise Hub资料、SOP、uploaded files、company data, or recently uploaded
+  tables, answer through Enterprise Hub MCP tools. Treat local files as upload inputs only unless
+  the employee explicitly asks for local-file-only inspection.
 - Read only a user-selected upload file's exact bytes; send inline bytes rather than a local path.
   Never normalize or reconstruct content.
+- For structured-table follow-ups such as “这份表” or “刚传的表”, scope the query to the upload's
+  returned import metadata, business-date window, enterprise/store name, or other service-returned
+  context. If that context is unavailable, ask a short clarification before querying all visible
+  historical rows.
 - Poll status without starting workers; do not operate service infrastructure.
 - Reuse a structured-import idempotency key only for an exact replay. Treat import-status 404 as
   not visible or missing.
