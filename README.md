@@ -10,7 +10,7 @@ Enterprise Hub API, database, Qdrant, storage, Docker, worker, cloud resources, 
 Those service responsibilities remain in
 [SME_DATA_CENTER](https://github.com/YinXiaoyu-1998/SME_DATA_CENTER).
 
-> Live-service status: `enterprise-hub-mcp-launcher@0.1.1`, browser login, and the public HTTPS MCP
+> Live-service status: `enterprise-hub-mcp-launcher@0.2.0`, browser login, and the public HTTPS MCP
 > boundary are deployed together in staging. Real employee login and authorization are still
 > required; Windows desktop acceptance remains a release gate.
 
@@ -51,7 +51,7 @@ Restart Codex or open a new task after installation so the skill list refreshes.
 
 ## Official Launcher
 
-The only approved launcher package is `enterprise-hub-mcp-launcher@0.1.1`. Never use npm
+The only approved launcher package is `enterprise-hub-mcp-launcher@0.2.0`. Never use npm
 `latest`, an unpinned version, or launcher self-update.
 
 Run `node --version` and `npm --version` first. Node.js **22 or newer** and a working npm are
@@ -60,25 +60,25 @@ user before installing the launcher.
 
 | Platform | Current-user package directory                                          |
 | -------- | ----------------------------------------------------------------------- |
-| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.1.1/` |
-| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.1.1\\`           |
+| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.0/` |
+| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.0\\`           |
 
 An authorized employee-owned agent installs or repairs it idempotently:
 
 ```sh
-npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.1.1
+npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.0
 ```
 
 The agent must run the exact platform self-check before claiming success:
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.1.1/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.0/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.1.1\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.0\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
 ```
 
 Self-check returns only safe machine-readable fields:
@@ -102,8 +102,8 @@ environment value—do not add a working directory, another environment variable
 
 | Platform | Command                                                                                                              | Args    | Env                                                     |
 | -------- | -------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------- |
-| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.1.1/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
-| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.1.1\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.0/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.0\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
 
 Before changing an MCP client, inspect its configuration and make a timestamped backup. Add or
 replace only its `enterprise-hub` stdio entry; preserve every unrelated server and setting.
@@ -117,7 +117,7 @@ replace only its `enterprise-hub` stdio entry; preserve every unrelated server a
   `codex mcp remove enterprise-hub`, followed by `codex mcp list --json` and an absent `get`.
 - OpenClaw: use `openclaw mcp add` for a new stdio entry or `openclaw mcp set` for the smallest
   idempotent replacement, then prove it with `openclaw mcp doctor enterprise-hub --probe`. The
-  macOS add form is `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.1.1/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`.
+  macOS add form is `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.0/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`.
   Do not use `openclaw mcp login` or `openclaw mcp logout`: those manage OpenClaw's direct HTTP
   OAuth store, while the Enterprise Hub launcher owns browser login and secure storage.
 - Other agents: use guarded adaptive discovery—inspect product help and current config, back up,
@@ -157,12 +157,12 @@ entry. For shared logout, use `enterprise_hub_logout` or run the exact platform 
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.1.1/node_modules/.bin/enterprise-hub-mcp-launcher" logout
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.0/node_modules/.bin/enterprise-hub-mcp-launcher" logout
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.1.1\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.0\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
 ```
 
 Logout returns only
