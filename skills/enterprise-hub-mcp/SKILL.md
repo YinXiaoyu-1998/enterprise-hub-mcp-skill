@@ -158,6 +158,13 @@ complete, append-only menu snapshot rather than a sales/business date-window dat
 - Treat the uploaded file as the full directory for that date. Do not split it into CSV parts,
   upload only changed rows, use the service to merge it with another file, or describe a partial
   file as a complete catalog.
+- The file must contain exactly these controlled headers, in any column order:
+  `菜品编码（SPUID）`, `菜品编码（SKUID）`, `菜品名称`, `品牌`, `基础分类`, `一级分类编码`,
+  `二级分类编码`, `规格名称`, `售卖价`, and `菜品别名`.
+- Every row requires SPUID, SKUID, dish name, brand, base category, level-1 category code, and
+  sale price. Only level-2 category code, specification name, and dish alias may be blank. Treat
+  all codes as strings (including leading zeros); sale price must be a finite decimal, and `0` is
+  valid. SKUID must be unique within the merged snapshot; SPUID may repeat across specifications.
 - For XLSX, the service merges every visible sheet whose header exactly matches the catalog
   schema. Sheet names do not select data. Nonmatching sheets, including headquarters combo
   sheets, are not imported and are reported in the safe status summary. A matching hidden sheet
