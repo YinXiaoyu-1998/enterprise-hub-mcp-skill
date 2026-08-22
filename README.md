@@ -158,10 +158,11 @@ or chunk the file, upload changed rows, or merge a partial catalog. If the snaps
 remove unrelated sheets/columns outside the catalog schema, use a service-supported larger limit,
 or seek operator help.
 
-The ten controlled headers may be in any order: `菜品编码（SPUID）`, `菜品编码（SKUID）`, `菜品名称`, `品牌`,
-`基础分类`, `一级分类编码`, `二级分类编码`, `规格名称`, `售卖价`, and `菜品别名`. SPUID, SKUID, name, brand,
-base category, level-1 code, and sale price are required; only level-2 code, specification name,
-and alias may be blank. Codes are strings, sale price is a finite decimal (`0` is valid), SKUID is
+A catalog table contains exactly these ten controlled headers, with no additional header columns;
+column order may vary: `菜品编码（SPUID）`, `菜品编码（SKUID）`, `菜品名称`, `品牌`, `基础分类`,
+`一级分类编码`, `二级分类编码`, `规格名称`, `售卖价`, and `菜品别名`. SPUID, SKUID, name, brand, base
+category, level-1 code, and sale price are required; only level-2 code, specification name, and
+alias may be blank. Codes are strings, sale price is a finite decimal (`0` is valid), SKUID is
 unique per merged snapshot, and SPUID can repeat across specifications.
 
 Snapshots may be historical and out of order. A different same-date correction requires archiving
