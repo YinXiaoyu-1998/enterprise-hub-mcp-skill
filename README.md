@@ -150,6 +150,30 @@ agents sharing that OS-user secure store.
   explain `CURSOR_EXPIRED` and restart only if the employee wants to continue.
 - The Skill Directory lists metadata only—do not execute entries or generate reports/dashboards.
 
+### Dish Catalog Snapshots
+
+Use `dish_catalog` only after `list_structured_datasets` advertises it. Upload one complete
+CSV/XLSX catalog snapshot with `snapshotDate: "YYYYMMDD"`; do not send `startDate`/`endDate`, split
+or chunk the file, upload changed rows, or merge a partial catalog. If the snapshot is too large,
+remove unrelated sheets/columns outside the catalog schema, use a service-supported larger limit,
+or seek operator help.
+
+A catalog table contains exactly these ten controlled headers, with no additional header columns;
+column order may vary: `菜品编码（SPUID）`, `菜品编码（SKUID）`, `菜品名称`, `品牌`, `基础分类`,
+`一级分类编码`, `二级分类编码`, `规格名称`, `售卖价`, and `菜品别名`. SPUID, SKUID, name, brand, base
+category, level-1 code, and sale price are required; only level-2 code, specification name, and
+alias may be blank. Codes are strings, sale price is a finite decimal (`0` is valid), SKUID is
+unique per merged snapshot, and SPUID can repeat across specifications.
+
+Snapshots may be historical and out of order. A different same-date correction requires archiving
+the existing snapshot through the authorized maintenance path first; a newer upload does not
+replace older history. Query catalog data with the discovery-reported `snapshot_date` scope. Do not
+infer latest/current state, diffs, or added/removed/discontinued status across snapshots.
+
+For XLSX, every visible sheet whose headers exactly match the catalog schema is imported;
+nonmatching sheets, including headquarters combo sheets, are not imported and appear in safe
+status reporting. A matching hidden sheet rejects the upload.
+
 ## Lifecycle
 
 For per-agent removal, back up that agent's configuration and remove only its `enterprise-hub`
