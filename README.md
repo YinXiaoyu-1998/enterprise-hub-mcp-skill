@@ -130,6 +130,19 @@ browser page. After success, retry the original business operation once. Use
 `enterprise_hub_logout` only on an employee's request; it signs out all local Enterprise Hub
 agents sharing that OS-user secure store.
 
+## Structured Dataset Guidance
+
+Run `list_structured_datasets` before using a dataset and follow only the fields it advertises.
+For `delivery_ledger` and `supplier_catalog`, upload CSV/XLSX with `enterpriseName`,
+`idempotencyKey`, and `labelKeys`; omit all date fields. A delivery file is exactly one receipt, with
+receipt number/date derived from the source. A supplier file is one complete 33-column snapshot,
+not a delta or chunk. Poll `get_import_status` until `importBatch.status=applied` before querying.
+
+The latest successful applied supplier snapshot is the only current enrichment source. Delivery
+queries may select dynamic phone/address fields, but cannot filter, sort, group, or aggregate them;
+they may be `null` for no visible current catalog, no exact match, blank data, or ambiguity. Do not
+fall back to an older catalog.
+
 ## Safe Use
 
 - Backend authorization, not client filtering, determines visible organizations, labels, and
