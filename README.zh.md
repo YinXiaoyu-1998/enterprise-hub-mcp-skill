@@ -122,6 +122,18 @@ stdio entry，保留所有无关 server 与设置。
 要求退出时调用 `enterprise_hub_logout`；它会让同一 OS 用户安全存储下的所有本地 Enterprise Hub
 agent 退出。
 
+## 结构化数据指引
+
+使用数据集前先调用 `list_structured_datasets`，只使用发现结果声明的数据集和字段。
+对于 `delivery_ledger` 和 `supplier_catalog`，上传 CSV/XLSX 时传入 `enterpriseName`、
+`idempotencyKey`、`labelKeys`，不要传任何日期字段。每个 delivery 文件只能代表一张收货单，
+收货单号和日期从文件内容派生；每个 supplier 文件必须是完整的 33 列快照，不是增量或分片。
+上传后轮询 `get_import_status`，直到 `importBatch.status=applied` 再查询。
+
+最新一次成功 applied 的供应商快照才是当前 enrichment 来源。delivery 查询可以选择动态电话/地址
+字段，但不能用它们过滤、排序、分组或聚合；没有可见当前目录、没有精确匹配、源值为空或名称歧义时，
+字段可以为 `null`。不得回退到旧目录。
+
 ## 安全使用
 
 - 可见组织、标签和资源完全由后端授权决定，不依赖客户端过滤。不得传入组织 ID，也不得推断
