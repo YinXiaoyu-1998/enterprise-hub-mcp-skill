@@ -10,7 +10,7 @@ Enterprise Hub API, database, Qdrant, storage, Docker, worker, cloud resources, 
 Those service responsibilities remain in
 [SME_DATA_CENTER](https://github.com/YinXiaoyu-1998/SME_DATA_CENTER).
 
-> Live-service status: `enterprise-hub-mcp-launcher@0.2.4`, browser login, and the public HTTPS MCP
+> Live-service status: `enterprise-hub-mcp-launcher@0.2.5`, browser login, and the public HTTPS MCP
 > boundary are deployed together in staging. Real employee login and authorization are still
 > required; Windows desktop acceptance remains a release gate.
 
@@ -51,7 +51,7 @@ Restart Codex or open a new task after installation so the skill list refreshes.
 
 ## Official Launcher
 
-The only approved launcher package is `enterprise-hub-mcp-launcher@0.2.4`. Never use npm
+The only approved launcher package is `enterprise-hub-mcp-launcher@0.2.5`. Never use npm
 `latest`, an unpinned version, or launcher self-update.
 
 Run `node --version` and `npm --version` first. Node.js **22 or newer** and a working npm are
@@ -60,25 +60,25 @@ user before installing the launcher.
 
 | Platform | Current-user package directory                                          |
 | -------- | ----------------------------------------------------------------------- |
-| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.4/` |
-| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.4\\`           |
+| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/` |
+| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.5\\`           |
 
 An authorized employee-owned agent installs or repairs it idempotently:
 
 ```sh
-npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.4
+npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.5
 ```
 
 The agent must run the exact platform self-check before claiming success:
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.4/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.4\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.5\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
 ```
 
 Self-check returns only safe machine-readable fields:
@@ -102,8 +102,8 @@ environment value—do not add a working directory, another environment variable
 
 | Platform | Command                                                                                                              | Args    | Env                                                     |
 | -------- | -------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------- |
-| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.4/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
-| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.4\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.5\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
 
 Before changing an MCP client, inspect its configuration and make a timestamped backup. Add or
 replace only its `enterprise-hub` stdio entry; preserve every unrelated server and setting.
@@ -117,7 +117,7 @@ replace only its `enterprise-hub` stdio entry; preserve every unrelated server a
   `codex mcp remove enterprise-hub`, followed by `codex mcp list --json` and an absent `get`.
 - OpenClaw: use `openclaw mcp add` for a new stdio entry or `openclaw mcp set` for the smallest
   idempotent replacement, then prove it with `openclaw mcp doctor enterprise-hub --probe`. The
-  macOS add form is `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.4/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`.
+  macOS add form is `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`.
   Do not use `openclaw mcp login` or `openclaw mcp logout`: those manage OpenClaw's direct HTTP
   OAuth store, while the Enterprise Hub launcher owns browser login and secure storage.
 - Other agents: use guarded adaptive discovery—inspect product help and current config, back up,
@@ -135,13 +135,18 @@ agents sharing that OS-user secure store.
 Run `list_structured_datasets` before using a dataset and follow only the fields it advertises.
 For `delivery_ledger` and `supplier_catalog`, upload CSV/XLSX with `enterpriseName`,
 `idempotencyKey`, and `labelKeys`; omit all date fields. A delivery file is exactly one receipt, with
-receipt number/date derived from the source. A supplier file is one complete 33-column snapshot,
+receipt ID/date derived from the source. A supplier file is one complete 33-column snapshot,
 not a delta or chunk. Poll `get_import_status` until `importBatch.status=applied` before querying.
 
 The latest successful applied supplier snapshot is the only current enrichment source. Delivery
 queries may select dynamic phone/address fields, but cannot filter, sort, group, or aggregate them;
 they may be `null` for no visible current catalog, no exact match, blank data, or ambiguity. Do not
 fall back to an older catalog.
+
+Quarantine certificate uploads use `upload_quarantine_certificate`, one JPG/JPEG/PNG image per
+call, linked by `receiptId`. Query certificates only with explicit `receiptIds`; use
+`get_source_document_download_url` with a returned `sourceDocumentId` when the employee needs the
+original file.
 
 ## Safe Use
 
@@ -150,8 +155,8 @@ fall back to an older catalog.
 - For questions about Enterprise Hub资料、SOP、uploaded files、company data, or recently uploaded
   tables, answer through Enterprise Hub MCP tools. Treat local files as upload inputs only unless
   the employee explicitly asks for local-file-only inspection.
-- Read only a user-selected upload file's exact bytes; send inline bytes rather than a local path.
-  Never normalize or reconstruct content.
+- Prefer path-mode uploads so the launcher reads only the user-selected file's exact bytes. Never
+  normalize or reconstruct content.
 - For structured-table follow-ups such as “这份表” or “刚传的表”, scope the query to the upload's
   returned import metadata, business-date window, enterprise/store name, or other service-returned
   context. If that context is unavailable, ask a short clarification before querying all visible
@@ -194,12 +199,12 @@ entry. For shared logout, use `enterprise_hub_logout` or run the exact platform 
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.4/node_modules/.bin/enterprise-hub-mcp-launcher" logout
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" logout
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.4\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.5\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
 ```
 
 Logout returns only
