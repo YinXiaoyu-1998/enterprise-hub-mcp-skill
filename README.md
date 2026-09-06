@@ -10,9 +10,9 @@ Enterprise Hub API, database, Qdrant, storage, Docker, worker, cloud resources, 
 Those service responsibilities remain in
 [SME_DATA_CENTER](https://github.com/YinXiaoyu-1998/SME_DATA_CENTER).
 
-> Live-service status: `enterprise-hub-mcp-launcher@0.2.5`, browser login, and the public HTTPS MCP
-> boundary are deployed together in staging. Real employee login and authorization are still
-> required; Windows desktop acceptance remains a release gate.
+> Live-service status: `enterprise-hub-mcp-launcher@0.2.6`, browser login, and the public HTTPS MCP
+> boundary are deployed together and independently verified. Real employee login and backend
+> authorization are still required.
 
 ## Install The Skill
 
@@ -51,7 +51,7 @@ Restart Codex or open a new task after installation so the skill list refreshes.
 
 ## Official Launcher
 
-The only approved launcher package is `enterprise-hub-mcp-launcher@0.2.5`. Never use npm
+The only approved launcher package is `enterprise-hub-mcp-launcher@0.2.6`. Never use npm
 `latest`, an unpinned version, or launcher self-update.
 
 Run `node --version` and `npm --version` first. Node.js **22 or newer** and a working npm are
@@ -60,25 +60,25 @@ user before installing the launcher.
 
 | Platform | Current-user package directory                                          |
 | -------- | ----------------------------------------------------------------------- |
-| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/` |
-| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.5\\`           |
+| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/` |
+| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.6\\`           |
 
 An authorized employee-owned agent installs or repairs it idempotently:
 
 ```sh
-npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.5
+npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.6
 ```
 
 The agent must run the exact platform self-check before claiming success:
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.5\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.6\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
 ```
 
 Self-check returns only safe machine-readable fields:
@@ -102,8 +102,8 @@ environment value—do not add a working directory, another environment variable
 
 | Platform | Command                                                                                                              | Args    | Env                                                     |
 | -------- | -------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------- |
-| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
-| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.5\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| macOS    | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| Windows  | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.6\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
 
 Before changing an MCP client, inspect its configuration and make a timestamped backup. Add or
 replace only its `enterprise-hub` stdio entry; preserve every unrelated server and setting.
@@ -117,7 +117,7 @@ replace only its `enterprise-hub` stdio entry; preserve every unrelated server a
   `codex mcp remove enterprise-hub`, followed by `codex mcp list --json` and an absent `get`.
 - OpenClaw: use `openclaw mcp add` for a new stdio entry or `openclaw mcp set` for the smallest
   idempotent replacement, then prove it with `openclaw mcp doctor enterprise-hub --probe`. The
-  macOS add form is `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`.
+  macOS add form is `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`.
   Do not use `openclaw mcp login` or `openclaw mcp logout`: those manage OpenClaw's direct HTTP
   OAuth store, while the Enterprise Hub launcher owns browser login and secure storage.
 - Other agents: use guarded adaptive discovery—inspect product help and current config, back up,
@@ -132,16 +132,35 @@ agents sharing that OS-user secure store.
 
 ## Structured Dataset Guidance
 
-Run `list_structured_datasets` before using a dataset and follow only the fields it advertises.
+Run `list_structured_datasets` before using a dataset and follow only the datasets, fields,
+operators, and capabilities it advertises. Field `canonicalName` values are the only valid
+structured-query field names; use `sourceColumn` and `aliases` only to map employee wording or
+source-table labels to canonical fields and to present friendlier result headers.
+
+Use `describe_structured_dataset_coverage` when the employee needs to know which readable applied
+sources exist for a dataset before deciding whether a query is complete enough. Coverage returns
+source facts only: window datasets report readable import windows, snapshot datasets report
+readable snapshots, and datasets without query-scope metadata return no sources. The client, not
+the service, decides and states any sufficiency assumptions.
+
+Structured queries are controlled read-only JSON requests, never SQL. Detail queries return
+selected canonical fields. Aggregate queries may use explicit mechanical aggregates only:
+`count`, `countDistinct`, `sum`, `avg`, `min`, `max`, and `weightedAvg`. Group by at most four
+canonical fields and request at most twelve aggregates; aggregate sorting must use a group-by
+field or an aggregate alias from the same request. `weightedAvg` requires numeric aggregatable
+`field` and `weightField` values from the same dataset and returns `null` when total weight is zero
+or missing.
+
 For `delivery_ledger` and `supplier_catalog`, upload CSV/XLSX with `enterpriseName`,
-`idempotencyKey`, and `labelKeys`; omit all date fields. A delivery file is exactly one receipt, with
-receipt ID/date derived from the source. A supplier file is one complete 33-column snapshot,
-not a delta or chunk. Poll `get_import_status` until `importBatch.status=applied` before querying.
+`idempotencyKey`, and `labelKeys`; omit all date fields. A delivery file is one receipt, with
+receipt ID/date derived from the source. A supplier file is one complete current snapshot, not a
+delta or chunk. Poll `get_import_status` until `importBatch.status=applied` before querying.
 
 The latest successful applied supplier snapshot is the only current enrichment source. Delivery
-queries may select dynamic phone/address fields, but cannot filter, sort, group, or aggregate them;
-they may be `null` for no visible current catalog, no exact match, blank data, or ambiguity. Do not
-fall back to an older catalog.
+queries may select dynamic phone/address fields only when discovery advertises them, but cannot
+filter, sort, group, or aggregate them unless discovery says otherwise; they may be `null` for no
+visible current catalog, no exact match, blank data, or ambiguity. Do not fall back to an older
+catalog.
 
 Quarantine certificate uploads use `upload_quarantine_certificate`, one JPG/JPEG/PNG image per
 call, linked by `receiptId`. Query certificates only with explicit `receiptIds`; use
@@ -176,21 +195,10 @@ or chunk the file, upload changed rows, or merge a partial catalog. If the snaps
 remove unrelated sheets/columns outside the catalog schema, use a service-supported larger limit,
 or seek operator help.
 
-A catalog table contains exactly these ten controlled headers, with no additional header columns;
-column order may vary: `菜品编码（SPUID）`, `菜品编码（SKUID）`, `菜品名称`, `品牌`, `基础分类`,
-`一级分类编码`, `二级分类编码`, `规格名称`, `售卖价`, and `菜品别名`. SPUID, SKUID, name, brand, base
-category, level-1 code, and sale price are required; only level-2 code, specification name, and
-alias may be blank. Codes are strings, sale price is a finite decimal (`0` is valid), SKUID is
-unique per merged snapshot, and SPUID can repeat across specifications.
-
 Snapshots may be historical and out of order. A different same-date correction requires archiving
 the existing snapshot through the authorized maintenance path first; a newer upload does not
 replace older history. Query catalog data with the discovery-reported `snapshot_date` scope. Do not
 infer latest/current state, diffs, or added/removed/discontinued status across snapshots.
-
-For XLSX, every visible sheet whose headers exactly match the catalog schema is imported;
-nonmatching sheets, including headquarters combo sheets, are not imported and appear in safe
-status reporting. A matching hidden sheet rejects the upload.
 
 ## Lifecycle
 
@@ -199,12 +207,12 @@ entry. For shared logout, use `enterprise_hub_logout` or run the exact platform 
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" logout
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher" logout
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.5\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.6\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
 ```
 
 Logout returns only

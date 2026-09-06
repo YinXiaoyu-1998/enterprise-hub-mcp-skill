@@ -8,8 +8,8 @@
 storage、Docker、worker、云资源或部署。服务职责仍属于主项目
 [SME_DATA_CENTER](https://github.com/YinXiaoyu-1998/SME_DATA_CENTER)。
 
-> 在线服务状态：`enterprise-hub-mcp-launcher@0.2.5`、浏览器登录和公开 HTTPS MCP 边界已在
-> staging 一同部署。员工仍需完成真实登录与授权；Windows 桌面验收仍是发布门。
+> 在线服务状态：`enterprise-hub-mcp-launcher@0.2.6`、浏览器登录和公开 HTTPS MCP 边界已一同部署并
+> 独立验证。员工仍需完成真实登录与后端授权。
 
 ## 安装 Skill
 
@@ -48,7 +48,7 @@ Copy-Item -Recurse "skills\enterprise-hub-mcp" $SkillTarget
 
 ## 正式 Launcher
 
-唯一批准的 launcher 包是 `enterprise-hub-mcp-launcher@0.2.5`。禁止使用 npm `latest`、
+唯一批准的 launcher 包是 `enterprise-hub-mcp-launcher@0.2.6`。禁止使用 npm `latest`、
 未固定版本或 launcher 自更新。
 
 先运行 `node --version` 和 `npm --version`。必须使用 Node.js **22 或更高版本**并确保 npm 可用。
@@ -56,25 +56,25 @@ Node.js 不存在或 major version 小于 22 时，先为当前用户安装/升�
 
 | 平台    | 当前 OS 用户的包目录                                                    |
 | ------- | ----------------------------------------------------------------------- |
-| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/` |
-| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.5\\`           |
+| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/` |
+| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.6\\`           |
 
 经授权的员工自有 agent 用以下命令幂等安装或修复：
 
 ```sh
-npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.5
+npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.6
 ```
 
 agent 必须运行对应平台的精确自检，才能声明安装成功：
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.5\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.6\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
 ```
 
 self-check 只返回安全的 machine-readable 字段：`ok`、`launcherVersion`、`serviceOrigin`、
@@ -95,8 +95,8 @@ Credential Manager 中保存 durable credential。配置、环境变量、命令
 
 | 平台    | Command                                                                                                              | Args    | Env                                                     |
 | ------- | -------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------- |
-| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
-| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.5\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.6\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
 
 修改 MCP 客户端前，先检查现有配置并创建带时间戳的备份。只添加或替换它的 `enterprise-hub`
 stdio entry，保留所有无关 server 与设置。
@@ -111,7 +111,7 @@ stdio entry，保留所有无关 server 与设置。
   `codex mcp remove enterprise-hub`，然后以 `codex mcp list --json` 和 get absent 验证。
 - OpenClaw：新 entry 用 `openclaw mcp add`，最小幂等替换用 `openclaw mcp set`，再以
   `openclaw mcp doctor enterprise-hub --probe` 验证。macOS 的 add 形式是
-  `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`。
+  `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`。
   不要用 `openclaw mcp login` 或 `openclaw mcp logout`：它们管理 OpenClaw 的直连 HTTP OAuth
   store，而 Enterprise Hub 的浏览器登录和安全存储由 launcher 管理。
 - 其他 agent：采取受保护的自适应发现——检查产品 help 与当前配置、先备份、只加固定本地 stdio
@@ -124,15 +124,29 @@ agent 退出。
 
 ## 结构化数据指引
 
-使用数据集前先调用 `list_structured_datasets`，只使用发现结果声明的数据集和字段。
+使用数据集前先调用 `list_structured_datasets`，只使用发现结果声明的数据集、字段、operator 和
+capabilities。字段的 `canonicalName` 才是结构化查询里的合法字段名；`sourceColumn` 和 `aliases`
+只用于把员工说法或来源表头映射到 canonical 字段，或在展示结果时使用更友好的表头。
+
+当员工需要判断某个数据集当前有哪些可读 applied 来源、查询范围是否足够时，调用
+`describe_structured_dataset_coverage`。coverage 只返回来源事实：window 数据集返回可读导入时间窗，
+snapshot 数据集返回可读快照，没有查询范围 metadata 的数据集返回空 sources。是否足够支持当前问题由
+client 自己判断并说明假设，不是服务端业务结论。
+
+结构化查询是受控只读 JSON 请求，不是 SQL。detail 查询返回选定 canonical 字段；aggregate 查询只能使用
+显式机械聚合：`count`、`countDistinct`、`sum`、`avg`、`min`、`max` 和 `weightedAvg`。最多用四个
+canonical 字段分组、十二个聚合输出；聚合排序字段必须是本次请求的 group-by 字段或聚合 alias。
+`weightedAvg` 的 `field` 与 `weightField` 必须是同一数据集中可聚合的数值 canonical 字段，总权重为
+零或缺失时返回 `null`。
+
 对于 `delivery_ledger` 和 `supplier_catalog`，上传 CSV/XLSX 时传入 `enterpriseName`、
-`idempotencyKey`、`labelKeys`，不要传任何日期字段。每个 delivery 文件只能代表一张收货单，
-收货单号和日期从文件内容派生；每个 supplier 文件必须是完整的 33 列快照，不是增量或分片。
-上传后轮询 `get_import_status`，直到 `importBatch.status=applied` 再查询。
+`idempotencyKey`、`labelKeys`，不要传任何日期字段。每个 delivery 文件只能代表一张收货单，收货单号和
+日期从文件内容派生；每个 supplier 文件必须是一份完整当前快照，不是增量或分片。上传后轮询
+`get_import_status`，直到 `importBatch.status=applied` 再查询。
 
 最新一次成功 applied 的供应商快照才是当前 enrichment 来源。delivery 查询可以选择动态电话/地址
-字段，但不能用它们过滤、排序、分组或聚合；没有可见当前目录、没有精确匹配、源值为空或名称歧义时，
-字段可以为 `null`。不得回退到旧目录。
+字段，但除非 discovery 明确声明支持，不能用它们过滤、排序、分组或聚合；没有可见当前目录、没有
+精确匹配、源值为空或名称歧义时，字段可以为 `null`。不得回退到旧目录。
 
 检疫证明上传使用 `upload_quarantine_certificate`，每次调用只上传一张 JPG/JPEG/PNG 图片，并用
 `receiptId` 关联收货单。查询证明时只能显式传入 `receiptIds`；员工需要原始文件时，用返回的
@@ -157,18 +171,9 @@ CSV/XLSX 菜品目录快照，并传入 `snapshotDate: "YYYYMMDD"`；不得传 `
 分块文件、只上传变更行，或把部分目录交给服务合并。快照过大时，应移除目录 schema 外的无关
 sheet/列、使用服务支持的更大限制，或寻求运营人员帮助。
 
-菜品目录表恰好包含以下十个受控表头，不得有额外表头列；列顺序可以不同：`菜品编码（SPUID）`、
-`菜品编码（SKUID）`、`菜品名称`、`品牌`、`基础分类`、`一级分类编码`、`二级分类编码`、`规格名称`、`售卖价`、
-`菜品别名`。每行必须有 SPUID、SKUID、菜品名称、品牌、基础分类、一级分类编码和售卖价；只有二级分类编码、
-规格名称、菜品别名可为空。编码一律按字符串处理，售卖价必须是有限十进制数（`0` 有效）；合并后快照内 SKUID
-必须唯一，SPUID 可在不同规格间重复。
-
 快照可以是历史快照，也可以乱序上传。不同内容的同日更正，必须先经授权维护路径归档已有快照；
 上传较新的快照不会替换旧历史。查询目录数据时，用发现结果提供的 `snapshot_date` 限定范围；不得
 推断最新/当前状态、差异，或跨快照的新增、删除、停售等状态。
-
-对于 XLSX，每个可见且 header 与目录 schema 完全一致的 sheet 都会被导入；不符合的 sheet（包括
-总部组合套餐 sheet）不会导入，并会出现在安全状态报告中。符合 schema 的隐藏 sheet 会使整个上传被拒绝。
 
 ## 生命周期
 
@@ -177,12 +182,12 @@ sheet/列、使用服务支持的更大限制，或寻求运营人员帮助。
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.5/node_modules/.bin/enterprise-hub-mcp-launcher" logout
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.6/node_modules/.bin/enterprise-hub-mcp-launcher" logout
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.5\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.6\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
 ```
 
 logout 只返回
