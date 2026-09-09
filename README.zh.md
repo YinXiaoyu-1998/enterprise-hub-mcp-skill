@@ -8,7 +8,7 @@
 storage、Docker、worker、云资源或部署。服务职责仍属于主项目
 [SME_DATA_CENTER](https://github.com/YinXiaoyu-1998/SME_DATA_CENTER)。
 
-> 在线服务状态：`enterprise-hub-mcp-launcher@0.2.7`、浏览器登录和公开 HTTPS MCP 边界已一同部署并
+> 在线服务状态：`enterprise-hub-mcp-launcher@0.2.8`、浏览器登录和公开 HTTPS MCP 边界已一同部署并
 > 独立验证。员工仍需完成真实登录与后端授权。
 
 ## 安装 Skill
@@ -64,7 +64,7 @@ https://github.com/YinXiaoyu-1998/enterprise-hub-mcp-skill 的最新默认分支
 
 ## 正式 Launcher
 
-唯一批准的 launcher 包是 `enterprise-hub-mcp-launcher@0.2.7`。禁止使用 npm `latest`、
+唯一批准的 launcher 包是 `enterprise-hub-mcp-launcher@0.2.8`。禁止使用 npm `latest`、
 未固定版本或 launcher 自更新。
 
 先运行 `node --version` 和 `npm --version`。必须使用 Node.js **22 或更高版本**并确保 npm 可用。
@@ -72,25 +72,25 @@ Node.js 不存在或 major version 小于 22 时，先为当前用户安装/升�
 
 | 平台    | 当前 OS 用户的包目录                                                    |
 | ------- | ----------------------------------------------------------------------- |
-| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.7/` |
-| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.7\\`           |
+| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.8/` |
+| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.8\\`           |
 
 经授权的员工自有 agent 用以下命令幂等安装或修复：
 
 ```sh
-npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.7
+npm install --prefix "<launcher-directory>" --save-exact enterprise-hub-mcp-launcher@0.2.8
 ```
 
 agent 必须运行对应平台的精确自检，才能声明安装成功：
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.7/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.8/node_modules/.bin/enterprise-hub-mcp-launcher" self-check
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.7\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.8\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" self-check
 ```
 
 self-check 只返回安全的 machine-readable 字段：`ok`、`launcherVersion`、`serviceOrigin`、
@@ -111,8 +111,8 @@ Credential Manager 中保存 durable credential。配置、环境变量、命令
 
 | 平台    | Command                                                                                                              | Args    | Env                                                     |
 | ------- | -------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------- |
-| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.7/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
-| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.7\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| macOS   | `~/Library/Application Support/Enterprise Hub/launcher/versions/0.2.8/node_modules/.bin/enterprise-hub-mcp-launcher` | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
+| Windows | `%LOCALAPPDATA%\\Enterprise Hub\\launcher\\versions\\0.2.8\\node_modules\\.bin\\enterprise-hub-mcp-launcher.cmd`     | `serve` | `ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz` |
 
 修改 MCP 客户端前，先检查现有配置并创建带时间戳的备份。只添加或替换它的 `enterprise-hub`
 stdio entry，保留所有无关 server 与设置。
@@ -127,7 +127,7 @@ stdio entry，保留所有无关 server 与设置。
   `codex mcp remove enterprise-hub`，然后以 `codex mcp list --json` 和 get absent 验证。
 - OpenClaw：新 entry 用 `openclaw mcp add`，最小幂等替换用 `openclaw mcp set`，再以
   `openclaw mcp doctor enterprise-hub --probe` 验证。macOS 的 add 形式是
-  `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.7/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`。
+  `openclaw mcp add enterprise-hub --command "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.8/node_modules/.bin/enterprise-hub-mcp-launcher" --arg serve --env ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz`。
   不要用 `openclaw mcp login` 或 `openclaw mcp logout`：它们管理 OpenClaw 的直连 HTTP OAuth
   store，而 Enterprise Hub 的浏览器登录和安全存储由 launcher 管理。
 - 其他 agent：采取受保护的自适应发现——检查产品 help 与当前配置、先备份、只加固定本地 stdio
@@ -137,6 +137,10 @@ stdio entry，保留所有无关 server 与设置。
 `enterprise_hub_login`，只请员工在浏览器页面完成登录。成功后只重试原业务操作一次。仅在员工
 要求退出时调用 `enterprise_hub_logout`；它会让同一 OS 用户安全存储下的所有本地 Enterprise Hub
 agent 退出。
+
+员工询问当前登录的是哪个 Enterprise Hub 账号时，调用零参数
+`enterprise_hub_get_current_user`。它只返回当前已认证员工的 `displayName`、`email` 和 `role`，
+不接受账号选择器，也不暴露内部 ID、labels 或凭证。
 
 ## 结构化数据指引
 
@@ -198,12 +202,12 @@ sheet/列、使用服务支持的更大限制，或寻求运营人员帮助。
 
 ```sh
 ENTERPRISE_HUB_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.7/node_modules/.bin/enterprise-hub-mcp-launcher" logout
+  "$HOME/Library/Application Support/Enterprise Hub/launcher/versions/0.2.8/node_modules/.bin/enterprise-hub-mcp-launcher" logout
 ```
 
 ```powershell
 $env:ENTERPRISE_HUB_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.7\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
+& "$env:LOCALAPPDATA\Enterprise Hub\launcher\versions\0.2.8\node_modules\.bin\enterprise-hub-mcp-launcher.cmd" logout
 ```
 
 logout 只返回
