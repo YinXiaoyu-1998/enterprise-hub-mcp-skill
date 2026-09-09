@@ -49,6 +49,23 @@ Copy-Item -Recurse "skills\enterprise-hub-mcp" $SkillTarget
 
 Restart Codex or open a new task after installation so the skill list refreshes.
 
+## Update The Skill
+
+Ask your agent: “Update the enterprise-hub-mcp-skill skill.” The installed skill recognizes both
+`enterprise-hub-mcp` and `enterprise-hub-mcp-skill`, retrieves the latest default-branch revision
+from [this official repository](https://github.com/YinXiaoyu-1998/enterprise-hub-mcp-skill), and
+backs up, replaces, and verifies its complete skill directory. A marketplace listing is not
+required. The agent reports the source commit and installation path; reload the host if needed.
+
+For an older copy without update instructions, bootstrap once with: “Update my installed
+enterprise-hub-mcp skill from https://github.com/YinXiaoyu-1998/enterprise-hub-mcp-skill,
+using the complete skills/enterprise-hub-mcp directory on its latest default branch.”
+
+Updating the skill alone preserves the launcher and login session. A launcher upgrade uses a
+separate user request and the exact pin in the refreshed official skill. Network/write access
+and the host's supported installation mechanism are still required. See the
+[update procedure](skills/enterprise-hub-mcp/references/update-skill.md).
+
 ## Official Launcher
 
 The only approved launcher package is `enterprise-hub-mcp-launcher@0.2.7`. Never use npm

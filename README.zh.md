@@ -46,6 +46,22 @@ Copy-Item -Recurse "skills\enterprise-hub-mcp" $SkillTarget
 
 安装后重启 Codex 或新开任务，使 skill 列表刷新。
 
+## 更新 Skill 本体
+
+直接对 agent 说：“帮我更新 enterprise-hub-mcp-skill 这个 skill。”新版 skill 同时识别
+`enterprise-hub-mcp` 和 `enterprise-hub-mcp-skill`，会从
+[本官方仓库](https://github.com/YinXiaoyu-1998/enterprise-hub-mcp-skill)的默认分支获取最新内容，
+备份、替换并校验完整 skill 目录，不依赖推荐市场。完成后会报告来源 commit 和安装路径；
+如有需要，再刷新或重启 agent。
+
+旧副本如果还没有更新说明，首次请这样说：“请从
+https://github.com/YinXiaoyu-1998/enterprise-hub-mcp-skill 的最新默认分支，
+用完整的 skills/enterprise-hub-mcp 目录更新我已安装的 enterprise-hub-mcp skill。”
+
+只更新 skill 会保留 launcher 和登录会话。升级 launcher 需要用户提出该请求，并使用更新后的
+官方 skill 所批准的精确版本。agent 仍需具备网络访问、目录写入权限及宿主支持的安装方式。
+详见 [skill 更新流程](skills/enterprise-hub-mcp/references/update-skill.md)。
+
 ## 正式 Launcher
 
 唯一批准的 launcher 包是 `enterprise-hub-mcp-launcher@0.2.7`。禁止使用 npm `latest`、
