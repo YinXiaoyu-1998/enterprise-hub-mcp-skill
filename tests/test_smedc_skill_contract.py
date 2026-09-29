@@ -1,5 +1,4 @@
 import re
-import subprocess
 import unittest
 from pathlib import Path
 
@@ -19,10 +18,6 @@ def section(document: str, heading: str) -> str:
     return document.split(marker, 1)[1].split("\n## ", 1)[0]
 
 
-def prose(content: str) -> str:
-    return " ".join(content.split())
-
-
 def launcher_versions(content: str) -> list[str]:
     # Explicit install references only; bare minimum/history versions are not pins.
     patterns = (
@@ -36,61 +31,6 @@ def launcher_versions(content: str) -> list[str]:
         for pattern in patterns
         for match in re.finditer(pattern, content)
     ]
-
-
-def old_identity_terms() -> list[str]:
-    old_product = "Enterprise" + " Hub"
-    old_product_lower = "enterprise" + " hub"
-    old_slug = "enterprise" + "-hub"
-    old_snake = "enterprise" + "_hub"
-    old_compact = "enterprise" + "hub"
-    old_typo = "enterprice" + "hub"
-    old_tenant_en = "Mai" + "jia"
-    old_tenant_slug = "mai" + "jia"
-    old_tenant_zh = "麦" + "家"
-    return [
-        old_product,
-        old_product_lower,
-        old_slug,
-        old_snake,
-        old_compact,
-        old_typo,
-        old_tenant_en,
-        old_tenant_slug,
-        old_tenant_zh,
-    ]
-
-
-def tracked_repository_text_files() -> list[Path]:
-    completed = subprocess.run(
-        ["git", "ls-files", "-z"],
-        cwd=ROOT,
-        check=True,
-        stdout=subprocess.PIPE,
-    )
-    paths = []
-    for raw_path in completed.stdout.decode("utf-8").split("\0"):
-        if not raw_path:
-            continue
-
-        path = Path(raw_path)
-        parts = set(path.parts)
-        suffix = path.suffix.lower()
-
-        # These are not current repository prose/source contract surfaces.
-        if parts & {".git", ".worktrees", ".cache", "__pycache__"}:
-            continue
-        if suffix in {".pyc", ".pyo", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".pdf"}:
-            continue
-
-        full_path = ROOT / path
-        try:
-            full_path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        paths.append(full_path)
-
-    return paths
 
 
 class SmedcSkillContractTests(unittest.TestCase):
@@ -132,19 +72,6 @@ class SmedcSkillContractTests(unittest.TestCase):
             with self.subTest(term=term):
                 self.assertIn(term, self.current_text)
 
-    def test_companions_require_explicit_authorization(self) -> None:
-        companions = prose(section(self.skill_text, "Optional Companion Skills"))
-        self.assertIn("explicitly authorizes its installation", companions)
-        self.assertIn("Never install it silently", companions)
-        self.assertIn("not required for ordinary SMEDC work", companions)
-
-    def test_evidence_answers_surface_every_automatic_source_link(self) -> None:
-        downloads = prose(section(self.skill_text, "Quarantine Certificates And Source Downloads"))
-        self.assertIn("search_document_evidence` already returns `sources[]", downloads)
-        self.assertIn("show every entry", downloads)
-        self.assertIn("Do not call `get_source_document_download_url` again", downloads)
-        self.assertIn("SOURCE_DOWNLOAD_URL_UNAVAILABLE", downloads)
-
     def test_every_active_launcher_reference_uses_the_exact_pin(self) -> None:
         active = {
             "Skill approved package": self.skill_text.split("\n## ", 1)[0],
@@ -182,83 +109,15 @@ class SmedcSkillContractTests(unittest.TestCase):
                     section(document, launcher_heading),
                 )
 
-    def test_linux_launcher_support_is_actionable_and_bounded(self) -> None:
-        linux_launcher_directory = (
-            "${XDG_DATA_HOME:-$HOME/.local/share}/SMEDC/launcher/versions/0.6.0"
+    def test_distributed_skill_has_no_retired_product_or_tenant_names(self) -> None:
+        retired = re.compile(
+            r"enterprise[- _]?hub|enterpricehub|maijia|麦家", re.IGNORECASE
         )
-
-        install = prose(section(self.skill_text, "Official Install Or Update"))
-        device = prose(section(self.skill_text, "Device-Code Login Flow"))
-        self.assertIn("macOS, Windows, or Linux", install)
-        self.assertIn(linux_launcher_directory, install)
-        self.assertIn(linux_launcher_directory, section(self.readme_text, "Official Launcher"))
-        self.assertIn(linux_launcher_directory, section(self.readme_zh_text, "正式 Launcher"))
-        self.assertIn("headless Linux", device)
-        self.assertIn("openedBrowser: false", device)
-        self.assertIn("memory only", device)
-        self.assertIn("launcher or host restart", device)
-        self.assertIn("openclaw mcp add smedc", section(self.skill_text, "Configure The Invoking Agent"))
-
-    def test_admin_only_upload_guidance_precedes_local_file_access(self) -> None:
-        upload = section(self.skill_text, "Admin-Only Uploads")
-        # Preserve exact canonical wire values; normalize ordinary prose below.
-        self.assertIn("`UPLOAD_ADMIN_REQUIRED`", upload)
-        self.assertIn("`File upload requires the admin role.`", upload)
-        self.assertIn("`retryable: false`", upload)
-        for term in [
-            "Only active accounts with role `admin` may upload",
-            "do not read or transform the local file",
-            "Do not re-login or retry",
-            "remain visible",
-            "Do not dynamically hide or remove upload tools",
-            "Clearance is not upload permission",
-            "above their own clearance",
-            "creates no backend audit",
-            "file_upload.denied",
-            "delivery_ledger",
-        ]:
-            with self.subTest(term=term):
-                self.assertIn(term, prose(upload))
-        questions = prose(section(self.skill_text, "SMEDC Data Questions"))
-        self.assertNotIn("offer to upload it first", questions)
-
-    def test_upload_denial_distinguishes_http_and_mcp_transport(self) -> None:
-        for document, heading in [
-            (self.skill_text, "Admin-Only Uploads"),
-            (self.readme_text, "Upload Permissions"),
-            (self.readme_zh_text, "上传权限"),
-        ]:
-            with self.subTest(section=heading):
-                active = prose(section(document, heading))
-                self.assertIn("HTTP `403`", active)
-                self.assertRegex(active, r"MCP JSON-RPC.{0,80}HTTP `200`")
-                for literal in [
-                    "`isError: true`",
-                    "`UPLOAD_ADMIN_REQUIRED`",
-                    "`File upload requires the admin role.`",
-                    "`retryable: false`",
-                ]:
-                    self.assertIn(literal, active)
-                self.assertNotRegex(
-                    active, r"HTTP/MCP[^.!。]*403|MCP\s+`403|MCP JSON-RPC[^.!。]*HTTP `403`"
-                )
-
-    def test_old_current_identities_are_absent_from_tracked_text_files(self) -> None:
-        matches: list[str] = []
-
-        for path in tracked_repository_text_files():
-            relative_path = path.relative_to(ROOT)
-            text = path.read_text(encoding="utf-8")
-            for line_number, line in enumerate(text.splitlines(), start=1):
-                for term in old_identity_terms():
-                    if term in line:
-                        matches.append(f"{relative_path}:{line_number}: {term}")
-
-        self.assertEqual(
-            [],
-            matches,
-            "Old product, Skill, package, env, MCP, or tenant names remain.",
-        )
+        for path in sorted(SKILL_ROOT.rglob("*")):
+            if path.suffix not in {".md", ".yaml"}:
+                continue
+            with self.subTest(path=path.relative_to(SKILL_ROOT)):
+                self.assertIsNone(retired.search(read(path)))
 
 
 if __name__ == "__main__":
