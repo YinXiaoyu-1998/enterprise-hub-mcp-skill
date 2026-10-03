@@ -64,30 +64,11 @@ directory. Do not default to `~/.codex/skills`.
 | macOS/Linux-like | `~/.agents/skills/smedc-mcp`             |
 | Windows          | `%USERPROFILE%\.agents\skills\smedc-mcp` |
 
-macOS/Linux-like shell:
-
-```sh
-mkdir -p "$HOME/.agents/skills"
-SKILL_TARGET="$HOME/.agents/skills/smedc-mcp"
-if [ -e "$SKILL_TARGET" ]; then
-  mv "$SKILL_TARGET" "$SKILL_TARGET.bak.$(date +%Y%m%d%H%M%S)"
-fi
-cp -R skills/smedc-mcp "$SKILL_TARGET"
-```
-
-Windows PowerShell:
-
-```powershell
-$SkillRoot = Join-Path $env:USERPROFILE ".agents\skills"
-$SkillTarget = Join-Path $SkillRoot "smedc-mcp"
-New-Item -ItemType Directory -Force -Path $SkillRoot | Out-Null
-if (Test-Path $SkillTarget) {
-  Move-Item $SkillTarget "$SkillTarget.bak.$(Get-Date -Format yyyyMMddHHmmss)"
-}
-Copy-Item -Recurse "skills\smedc-mcp" $SkillTarget
-```
-
-Restart Codex or open a new task after installation so the skill list refreshes.
+Ask the agent to follow the [skill replacement procedure](skills/smedc-mcp/references/update-skill.md):
+stage the complete directory, keep temporary recovery copies outside all skill discovery roots,
+verify file contents and the host's loaded copy, then remove obsolete duplicates and temporary
+backups. Do not overlay an existing directory or create `.bak` copies inside a skill root.
+If the host needs a reload/restart, complete that step before claiming the installed skill is active.
 
 ## Update The Skill
 
@@ -95,10 +76,11 @@ Ask your agent: "Update the smedc-mcp-skill skill." The installed skill recogniz
 and `smedc-mcp-skill`, retrieves the latest default-branch revision from
 [`YinXiaoyu-1998/smedc-mcp-skill`](https://github.com/YinXiaoyu-1998/smedc-mcp-skill), and backs up,
 replaces, and verifies its complete skill directory. A marketplace listing is not required. The
-agent reports the source commit and installation path; reload the host if needed.
+agent reports the source commit, loaded installation path, and cleanup result; pending host
+reloads or obsolete copies are reported as incomplete.
 
-Updating the skill alone preserves the launcher and login session. A launcher upgrade uses a
-separate user request and the exact pin in the refreshed official skill. Network/write access and
+Updating the skill alone preserves the launcher and login session. A launcher upgrade requires a
+launcher or general SMEDC update request and uses the exact pin in the refreshed official skill. Network/write access and
 the host's supported installation mechanism are still required. See the
 [update procedure](skills/smedc-mcp/references/update-skill.md).
 
@@ -141,9 +123,14 @@ SMEDC_BASE_URL=https://api.smedatacenter.xyz \
   "$SMEDC_LAUNCHER_DIR/node_modules/.bin/smedc-mcp-launcher" self-check
 ```
 
-Self-check returns only safe machine-readable fields and never self-updates. An approved update
-uses a new exact versioned directory, changes only the invoking agent's MCP launcher path, and
-preserves any operating-system secure session. On Linux, `secureStore.available:false` is supported:
+Self-check returns only safe machine-readable fields and never self-updates. A general SMEDC
+update refreshes the skill and follows the required
+[upgrade and cleanup procedure](skills/smedc-mcp/references/upgrade-cleanup.md): prepare the
+approved launcher, switch MCP entries, reconnect and verify the running version, stop old
+processes, then remove superseded installations and temporary backups. Requests to remove all
+old versions also migrate safely discoverable current-user SMEDC integrations. Preserve valid
+operating-system secure sessions. A standalone self-check is not proof of the host connection.
+On Linux, `secureStore.available:false` is supported:
 the launcher returns the first-party login link instead of opening a local browser when headless,
 keeps the resulting session in memory only, and requires login again after launcher or host restart.
 
@@ -154,7 +141,8 @@ The complete launch tuple has one `serve` argument and one non-secret environmen
 `SMEDC_BASE_URL=https://api.smedatacenter.xyz`.
 
 Before changing an MCP client, inspect its configuration and make a timestamped backup. Add or
-replace only its `smedc` stdio entry; preserve every unrelated server and setting.
+replace its `smedc` stdio entry and remove verified duplicate SMEDC entries within the requested
+scope; preserve every unrelated server and setting.
 
 Use `smedc_auth_status` when authentication state is unknown. On `authentication_required`, invoke
 `smedc_login` and ask the employee only to complete the browser page. After success, retry the
@@ -169,3 +157,4 @@ returns the authenticated employee's `displayName`, `email`, `role`, `clearance`
 - `skills/smedc-mcp/SKILL.md`
 - `skills/smedc-mcp/agents/openai.yaml`
 - `skills/smedc-mcp/references/update-skill.md`
+- `skills/smedc-mcp/references/upgrade-cleanup.md`

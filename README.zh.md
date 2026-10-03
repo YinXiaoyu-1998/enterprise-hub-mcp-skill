@@ -56,38 +56,18 @@ clone 或下载本仓库后，把 skill 安装到当前用户的 canonical skill
 | macOS/Linux-like | `~/.agents/skills/smedc-mcp`             |
 | Windows          | `%USERPROFILE%\.agents\skills\smedc-mcp` |
 
-macOS/Linux-like shell：
-
-```sh
-mkdir -p "$HOME/.agents/skills"
-SKILL_TARGET="$HOME/.agents/skills/smedc-mcp"
-if [ -e "$SKILL_TARGET" ]; then
-  mv "$SKILL_TARGET" "$SKILL_TARGET.bak.$(date +%Y%m%d%H%M%S)"
-fi
-cp -R skills/smedc-mcp "$SKILL_TARGET"
-```
-
-Windows PowerShell：
-
-```powershell
-$SkillRoot = Join-Path $env:USERPROFILE ".agents\skills"
-$SkillTarget = Join-Path $SkillRoot "smedc-mcp"
-New-Item -ItemType Directory -Force -Path $SkillRoot | Out-Null
-if (Test-Path $SkillTarget) {
-  Move-Item $SkillTarget "$SkillTarget.bak.$(Get-Date -Format yyyyMMddHHmmss)"
-}
-Copy-Item -Recurse "skills\smedc-mcp" $SkillTarget
-```
-
-安装后重启 Codex 或新开任务，使 skill 列表刷新。
+让 agent 遵循 [Skill 替换流程](skills/smedc-mcp/references/update-skill.md)：暂存完整目录，
+把临时恢复备份放在所有 Skill 发现目录之外，校验文件并确认宿主实际加载的新副本，再删除旧副本和临时备份。
+不要覆盖复制已有目录，也不要在 Skill 目录内创建 `.bak` 副本。
+需要刷新或重启宿主时，完成该步骤后才能声明新 Skill 已生效。
 
 ## 更新 Skill 本体
 
 直接对 agent 说：“帮我更新 smedc-mcp-skill 这个 skill。”新版 skill 同时识别 `smedc-mcp` 和
 `smedc-mcp-skill`，会从
 [`YinXiaoyu-1998/smedc-mcp-skill`](https://github.com/YinXiaoyu-1998/smedc-mcp-skill)
-的默认分支获取最新内容，备份、替换并校验完整 skill 目录，不依赖推荐市场。完成后会报告来源 commit
-和安装路径；如有需要，再刷新或重启 agent。
+的默认分支获取最新内容，备份、替换并校验完整 skill 目录，不依赖推荐市场。完成后会报告来源
+commit、实际加载路径和清理结果；仍需重载或存在旧副本时，必须报告尚未完成。
 
 只更新 skill 会保留 launcher 和登录会话。升级 launcher 需要用户提出该请求，并使用更新后的官方 skill
 所批准的精确版本。agent 仍需具备网络访问、目录写入权限及宿主支持的安装方式。详见
@@ -132,8 +112,11 @@ SMEDC_BASE_URL=https://api.smedatacenter.xyz \
   "$SMEDC_LAUNCHER_DIR/node_modules/.bin/smedc-mcp-launcher" self-check
 ```
 
-self-check 只返回安全的 machine-readable 字段，且 launcher 不会自更新。批准更新时使用新的精确版本
-目录，只改调用该 agent 的 MCP launcher 路径，并保留可用的操作系统安全会话。Linux 上
+self-check 只返回安全的 machine-readable 字段，且 launcher 不会自更新。一般的 SMEDC 更新请求会先
+刷新 Skill，再执行完整的[升级清理流程](skills/smedc-mcp/references/upgrade-cleanup.md)：安装并检查批准
+版本、切换 MCP 配置、重连并确认实际运行版本、停止旧进程，最后删除旧安装和临时备份。要求清除所有旧版本
+时，也要迁移当前用户下可安全发现的其他 SMEDC 接入。保留有效的操作系统安全会话。单独自检成功不能证明
+宿主已连接新版。Linux 上
 `secureStore.available:false` 是受支持的结果：无头环境不打开本地浏览器，而是返回第一方
 登录链接；完成后会话只保存在内存中，launcher 或主机重启后需重新登录。
 
@@ -142,8 +125,8 @@ self-check 只返回安全的 machine-readable 字段，且 launcher 不会自�
 把 SMEDC 配置成本地 stdio launcher，名称为 `smedc`，不要配置成直连远程 HTTP/OAuth 服务。完整 launch
 tuple 只有一个 `serve` 参数和一个非秘密环境变量：`SMEDC_BASE_URL=https://api.smedatacenter.xyz`。
 
-修改 MCP 客户端前，先检查现有配置并创建带时间戳的备份。只添加或替换它的 `smedc` stdio entry，保留
-所有无关 server 与设置。
+修改 MCP 客户端前，先检查现有配置并创建带时间戳的备份。添加或替换它的 `smedc` stdio entry，并删除
+授权范围内已核实的重复 SMEDC entry，保留所有无关 server 与设置。
 
 认证状态未知时调用 `smedc_auth_status`。若返回 `authentication_required`，调用 `smedc_login`，只请员工
 在浏览器页面完成登录。成功后只重试原业务操作一次。仅在员工要求退出时调用 `smedc_logout`。
@@ -157,3 +140,4 @@ tuple 只有一个 `serve` 参数和一个非秘密环境变量：`SMEDC_BASE_UR
 - `skills/smedc-mcp/SKILL.md`
 - `skills/smedc-mcp/agents/openai.yaml`
 - `skills/smedc-mcp/references/update-skill.md`
+- `skills/smedc-mcp/references/upgrade-cleanup.md`
