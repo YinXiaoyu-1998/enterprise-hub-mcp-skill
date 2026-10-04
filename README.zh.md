@@ -26,6 +26,13 @@ MCP JSON-RPC 传输返回 HTTP `200`，工具结果包含 `isError: true`。两�
 0.6.0；更旧的 launcher 不受支持，并会收到 `LAUNCHER_UPGRADE_REQUIRED`。上传原始文件并报告服务校验错误，核心
 skill 不提供特定数据集的转换配方。
 
+## 待发布的台账 PDF 能力
+
+[五个归档工具契约](skills/smedc-mcp/references/ledger-pdf-tools.md) 需要正式发布后的 launcher
+0.7.0 和已启用归档交付的服务端。本分支没有发布 0.7.0，也没有更改当前 0.6.0 安装 pin。
+切换后，台账明细与原始 CSV/XLSX 签名关闭；门店/日期聚合和其他数据集继续可用。
+上传、照片、刷新和下载协调由独立安装的 delivery-ledger companion 负责；核心 Skill 不在本地生成台账。
+
 ## 安装档位
 
 ### 仅安装核心
@@ -41,7 +48,7 @@ SMEDC 查询。普通 SMEDC 工作不需要安装任何可选配套 skill，安�
 中，并保持为独立安装的 skill：
 
 - `smedc-business-analysis` 生成基于组织名称的经营诊断、周报和月报。
-- `smedc-delivery-ledger` 渲染标准进货台帐表、导出批准的 CSV，并指导收货单关联的检疫证明照片操作。
+- `smedc-delivery-ledger` 在归档能力发布并启用后，协调服务端每日 PDF 刷新、ZIP 准备和收货单关联检疫照片操作。
 
 如果尚未安装，agent 可以说明其官方来源并提出安装，但员工必须明确同意安装，或已经明确要求安装这个
 具名配套 skill / 全部推荐配套 skill。安装或更新任意一边都不会自动更新另一边。
@@ -141,3 +148,4 @@ tuple 只有一个 `serve` 参数和一个非秘密环境变量：`SMEDC_BASE_UR
 - `skills/smedc-mcp/agents/openai.yaml`
 - `skills/smedc-mcp/references/update-skill.md`
 - `skills/smedc-mcp/references/upgrade-cleanup.md`
+- `skills/smedc-mcp/references/ledger-pdf-tools.md`
