@@ -92,7 +92,7 @@ class SmedcSkillContractTests(unittest.TestCase):
             with self.subTest(section=label):
                 versions = launcher_versions(content)
                 self.assertTrue(versions, f"No launcher references in {label}")
-                self.assertEqual({"0.7.0"}, set(versions))
+                self.assertEqual({"0.7.1"}, set(versions))
 
     def test_install_guidance_uses_current_repository_and_skill_name(self) -> None:
         for document, install_heading, update_heading, launcher_heading in [
@@ -113,9 +113,9 @@ class SmedcSkillContractTests(unittest.TestCase):
         for path in sorted(SKILL_ROOT.rglob("*")):
             if path.suffix in {".md", ".yaml"}:
                 with self.subTest(path=path.relative_to(SKILL_ROOT)):
-                    self.assertTrue(set(launcher_versions(read(path))) <= {"0.7.0", "..."})
+                    self.assertTrue(set(launcher_versions(read(path))) <= {"0.7.1", "..."})
         reference = read(SKILL_ROOT / "references" / "ledger-pdf-tools.md")
-        self.assertIn("0.7.0 is published and independently verified", reference)
+        self.assertIn("0.7.1 is published and independently verified", reference)
         self.assertNotIn("once published", reference)
         self.assertIn("service archive delivery", reference)
         self.assertIn("references/ledger-pdf-tools.md", self.skill_text)
