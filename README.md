@@ -33,7 +33,7 @@ service validation errors; this core skill provides no dataset-specific transfor
 
 ## Pending Ledger PDF Capability
 
-The [five archive tool contracts](skills/smedc-mcp/references/ledger-pdf-tools.md) require launcher
+The [four archive tool contracts](skills/smedc-mcp/references/ledger-pdf-tools.md) require launcher
 0.7.0 once published and service archive delivery enabled. This branch does not publish 0.7.0 or
 change the active 0.6.0 installation pin. At cutover, ledger detail and original CSV/XLSX signing
 close; supported store/date aggregates and other datasets remain available. Workflow coordination
@@ -56,7 +56,7 @@ and remain independently installed skills:
 
 - `smedc-business-analysis` generates organization-backed operating diagnoses, weekly reports, and
   monthly reports.
-- `smedc-delivery-ledger` coordinates server daily PDF refresh, ZIP preparation, and receipt-linked
+- `smedc-delivery-ledger` coordinates scheduled server daily PDFs, ZIP preparation, and receipt-linked
   quarantine-certificate photo operations when the archive capability is released and enabled.
 
 If a companion is absent, an agent may identify the official source and offer to install it, but the

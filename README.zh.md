@@ -48,7 +48,7 @@ SMEDC 查询。普通 SMEDC 工作不需要安装任何可选配套 skill，安�
 中，并保持为独立安装的 skill：
 
 - `smedc-business-analysis` 生成基于组织名称的经营诊断、周报和月报。
-- `smedc-delivery-ledger` 在归档能力发布并启用后，协调服务端每日 PDF 刷新、ZIP 准备和收货单关联检疫照片操作。
+- `smedc-delivery-ledger` 在归档能力发布并启用后，协调服务端定时生成的每日 PDF、ZIP 准备和收货单关联检疫照片操作。
 
 如果尚未安装，agent 可以说明其官方来源并提出安装，但员工必须明确同意安装，或已经明确要求安装这个
 具名配套 skill / 全部推荐配套 skill。安装或更新任意一边都不会自动更新另一边。
