@@ -31,6 +31,15 @@ remain available. Minimum compatible launcher and the approved install pin are b
 Older launchers are unsupported and receive `LAUNCHER_UPGRADE_REQUIRED`. Upload original files and report
 service validation errors; this core skill provides no dataset-specific transformations.
 
+## Pending Ledger PDF Capability
+
+The [four archive tool contracts](skills/smedc-mcp/references/ledger-pdf-tools.md) require launcher
+0.7.0 once published and service archive delivery enabled. This branch does not publish 0.7.0 or
+change the active 0.6.0 installation pin. At cutover, ledger detail and original CSV/XLSX signing
+close; supported store/date aggregates and other datasets remain available. Workflow coordination
+belongs to the independently installed delivery-ledger companion; the core Skill never generates
+local ledgers.
+
 ## Installation Profiles
 
 ### Core-only install
@@ -47,8 +56,8 @@ and remain independently installed skills:
 
 - `smedc-business-analysis` generates organization-backed operating diagnoses, weekly reports, and
   monthly reports.
-- `smedc-delivery-ledger` renders the standard delivery-ledger table, exports the approved CSV, and
-  guides receipt-linked quarantine-certificate photo operations.
+- `smedc-delivery-ledger` coordinates scheduled server daily PDFs, ZIP preparation, and receipt-linked
+  quarantine-certificate photo operations when the archive capability is released and enabled.
 
 If a companion is absent, an agent may identify the official source and offer to install it, but the
 employee must explicitly authorize that installation or request the named companion or all
@@ -158,3 +167,4 @@ returns the authenticated employee's `displayName`, `email`, `role`, `clearance`
 - `skills/smedc-mcp/agents/openai.yaml`
 - `skills/smedc-mcp/references/update-skill.md`
 - `skills/smedc-mcp/references/upgrade-cleanup.md`
+- `skills/smedc-mcp/references/ledger-pdf-tools.md`

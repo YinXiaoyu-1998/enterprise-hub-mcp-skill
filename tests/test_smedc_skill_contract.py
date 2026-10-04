@@ -109,6 +109,37 @@ class SmedcSkillContractTests(unittest.TestCase):
                     section(document, launcher_heading),
                 )
 
+    def test_pending_archive_reference_cannot_change_install_pins(self) -> None:
+        for path in sorted(SKILL_ROOT.rglob("*")):
+            if path.suffix in {".md", ".yaml"}:
+                with self.subTest(path=path.relative_to(SKILL_ROOT)):
+                    self.assertTrue(set(launcher_versions(read(path))) <= {"0.6.0", "..."})
+        reference = read(SKILL_ROOT / "references" / "ledger-pdf-tools.md")
+        self.assertIn("0.7.0 once published", reference)
+        self.assertIn("not published", reference)
+        self.assertIn("service archive delivery", reference)
+        self.assertIn("references/ledger-pdf-tools.md", self.skill_text)
+
+    def test_archive_tool_table_exposes_only_frozen_public_inputs(self) -> None:
+        reference = read(SKILL_ROOT / "references" / "ledger-pdf-tools.md")
+        rows = ["| " + " | ".join(cell.strip() for cell in line.strip("|").split("|")) + " |"
+                for line in reference.splitlines() if line.startswith("| `")]
+        self.assertEqual(rows, [
+            "| `describe_ledger_pdf_coverage` | date selection | `storeNames`, `cursor` |",
+            "| `get_ledger_pdf_request_status` | `requestId` | `cursor` |",
+            "| `prepare_ledger_pdf_download` | `storeNames`, date selection, `idempotencyKey` | none |",
+            "| `get_ledger_pdf_download_url` | `requestId` | none |",
+        ])
+
+    def test_employee_archive_guidance_uses_scheduled_generation_only(self) -> None:
+        reference = read(SKILL_ROOT / "references" / "ledger-pdf-tools.md")
+        self.assertNotIn("refresh_ledger_pdfs", reference)
+        self.assertIn("03:00 Asia/Shanghai", reference)
+        self.assertIn("Employee agents cannot trigger", reference)
+        self.assertIn("including admins", reference)
+        self.assertIn("not PDF completion", self.skill_text)
+        self.assertIn("cannot trigger generation through MCP or HTTP", self.skill_text)
+
     def test_distributed_skill_has_no_retired_product_or_tenant_names(self) -> None:
         retired = re.compile(
             r"enterprise[- _]?hub|enterpricehub|maijia|麦家", re.IGNORECASE
