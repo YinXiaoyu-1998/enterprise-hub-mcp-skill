@@ -8,7 +8,7 @@ tokens, or authorization codes to an agent.
 This repository contains only skill and client-connection guidance. It never operates the SMEDC
 API, database, vector store, storage, Docker, worker, cloud resources, or deployment.
 
-> Live-service status: `smedc-mcp-launcher@0.7.0`, browser login, and the public HTTPS MCP
+> Live-service status: `smedc-mcp-launcher@0.7.1`, browser login, and the public HTTPS MCP
 > boundary are the current packaging contract. Real employee login and backend authorization are
 > still required. The launcher supports macOS, Windows, and Linux; headless Linux uses the same
 > Device Authorization flow and falls back to a memory-only session when no secure store exists.
@@ -18,7 +18,7 @@ API, database, vector store, storage, Docker, worker, cloud resources, or deploy
 Only active admins can upload evidence, structured datasets (including Delivery Ledger), and
 quarantine certificates. Employees at every clearance may read eligible data but cannot upload.
 Upload tools remain visible and admin-only; for a known employee role, the agent must not read or
-transform the local file. Launcher 0.7.0 preflights before file access; a local denial creates no
+transform the local file. Launcher 0.7.1 preflights before file access; a local denial creates no
 backend audit. Direct HTTP upload endpoints return HTTP `403`; MCP JSON-RPC transport returns
 HTTP `200` with `isError: true` in the tool result. Both carry `UPLOAD_ADMIN_REQUIRED`, exact message
 `File upload requires the admin role.`, and `retryable: false`; backend denials best-effort record
@@ -27,15 +27,15 @@ Do not re-login, retry, or increase clearance to recover from that denial.
 
 Admins may explicitly classify above their clearance without gaining ordinary read access.
 Partition create/parts/complete require admin; owner abort and existing status/manifest/read rules
-remain available. Minimum compatible launcher is 0.6.0; the approved install pin is 0.7.0.
+remain available. Minimum compatible launcher is 0.6.0; the approved install pin is 0.7.1.
 Older launchers are unsupported and receive `LAUNCHER_UPGRADE_REQUIRED`. Upload original files and report
 service validation errors; this core skill provides no dataset-specific transformations.
 
 ## Ledger PDF Capability And Service Rollout
 
 The [four archive tool contracts](skills/smedc-mcp/references/ledger-pdf-tools.md) require launcher
-0.7.0, which is published and independently verified, plus service archive delivery enabled.
-The approved installation pin is 0.7.0; archive delivery remains gated by service rollout. At cutover, ledger detail and original CSV/XLSX signing
+0.7.1, which is published and independently verified, plus service archive delivery enabled.
+The approved installation pin is 0.7.1; archive delivery remains gated by service rollout. At cutover, ledger detail and original CSV/XLSX signing
 close; supported store/date aggregates and other datasets remain available. Workflow coordination
 belongs to the independently installed delivery-ledger companion; the core Skill never generates
 local ledgers.
@@ -95,39 +95,39 @@ the host's supported installation mechanism are still required. See the
 
 ## Official Launcher
 
-The only approved launcher package is `smedc-mcp-launcher@0.7.0`. Never use npm `latest`, an
+The only approved launcher package is `smedc-mcp-launcher@0.7.1`. Never use npm `latest`, an
 unpinned version, or launcher self-update.
 
 Run `node --version` and `npm --version` first. Node.js 22 or newer and a working npm are required.
 An authorized employee-owned agent installs or repairs it idempotently:
 
 ```sh
-npm install --prefix "<launcher-directory>" --save-exact smedc-mcp-launcher@0.7.0
+npm install --prefix "<launcher-directory>" --save-exact smedc-mcp-launcher@0.7.1
 ```
 
 Use the approved current-user launcher directory:
 
 | Platform | Launcher directory                                                    |
 | -------- | --------------------------------------------------------------------- |
-| macOS    | `~/Library/Application Support/SMEDC/launcher/versions/0.7.0/`        |
-| Windows  | `%LOCALAPPDATA%\\SMEDC\\launcher\\versions\\0.7.0\\`                  |
-| Linux    | `${XDG_DATA_HOME:-$HOME/.local/share}/SMEDC/launcher/versions/0.7.0/` |
+| macOS    | `~/Library/Application Support/SMEDC/launcher/versions/0.7.1/`        |
+| Windows  | `%LOCALAPPDATA%\\SMEDC\\launcher\\versions\\0.7.1\\`                  |
+| Linux    | `${XDG_DATA_HOME:-$HOME/.local/share}/SMEDC/launcher/versions/0.7.1/` |
 
 The agent must run the exact platform self-check before claiming success:
 
 ```sh
 SMEDC_BASE_URL=https://api.smedatacenter.xyz \
-  "$HOME/Library/Application Support/SMEDC/launcher/versions/0.7.0/node_modules/.bin/smedc-mcp-launcher" self-check
+  "$HOME/Library/Application Support/SMEDC/launcher/versions/0.7.1/node_modules/.bin/smedc-mcp-launcher" self-check
 ```
 
 ```powershell
 $env:SMEDC_BASE_URL = "https://api.smedatacenter.xyz"
-& "$env:LOCALAPPDATA\SMEDC\launcher\versions\0.7.0\node_modules\.bin\smedc-mcp-launcher.cmd" self-check
+& "$env:LOCALAPPDATA\SMEDC\launcher\versions\0.7.1\node_modules\.bin\smedc-mcp-launcher.cmd" self-check
 ```
 
 ```sh
 # Linux
-SMEDC_LAUNCHER_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/SMEDC/launcher/versions/0.7.0"
+SMEDC_LAUNCHER_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/SMEDC/launcher/versions/0.7.1"
 SMEDC_BASE_URL=https://api.smedatacenter.xyz \
   "$SMEDC_LAUNCHER_DIR/node_modules/.bin/smedc-mcp-launcher" self-check
 ```
