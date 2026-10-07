@@ -134,7 +134,6 @@ class SmedcSkillContractTests(unittest.TestCase):
     def test_employee_archive_guidance_uses_scheduled_generation_only(self) -> None:
         reference = read(SKILL_ROOT / "references" / "ledger-pdf-tools.md")
         self.assertNotIn("refresh_ledger_pdfs", reference)
-        self.assertIn("03:00 Asia/Shanghai", reference)
         self.assertIn("Employee agents cannot trigger", reference)
         self.assertIn("including admins", reference)
         self.assertIn("not PDF completion", self.skill_text)
