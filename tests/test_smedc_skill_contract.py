@@ -120,6 +120,16 @@ class SmedcSkillContractTests(unittest.TestCase):
         self.assertIn("service archive delivery", reference)
         self.assertIn("references/ledger-pdf-tools.md", self.skill_text)
 
+    def test_partition_bundle_flow_is_release_gated_and_parameter_safe(self) -> None:
+        guide = section(self.skill_text, "Filtered Partition Bundle Downloads (Release Gated)")
+        for text in ["pin remains published `0.7.1`", "Launcher `0.8.0`", "published and independently verified",
+                     "server endpoints to be deployed", "prepare_structured_partition_download",
+                     "get_structured_partition_download_status", "retryAfterSeconds", "isError",
+                     "with only `requestId`", "does not wait for packaging", "1–128", "1–2000",
+                     "case-sensitive", "NFC", "failed", "expired", "valid empty local extract",
+                     "operator-only", "last consumer"]:
+            self.assertIn(text, guide)
+
     def test_archive_tool_table_exposes_only_frozen_public_inputs(self) -> None:
         reference = read(SKILL_ROOT / "references" / "ledger-pdf-tools.md")
         rows = ["| " + " | ".join(cell.strip() for cell in line.strip("|").split("|")) + " |"
