@@ -51,6 +51,20 @@ class SmedcSkillContractTests(unittest.TestCase):
             ]
         )
 
+    def test_partition_range_and_optional_bundle_release_boundaries(self) -> None:
+        range_guide = section(self.skill_text, "Filtered Partition Range Downloads (Release Gated)")
+        self.assertIn("`0.8.0`", range_guide)
+        self.assertIn("`storeNameContains`", range_guide)
+        self.assertNotIn("prepare_structured_partition_download", range_guide)
+        self.assertNotIn("get_structured_partition_download_status", range_guide)
+        optional_heading = "Optional Partition Bundle Downloads (Release Gated)"
+        if f"## {optional_heading}" in self.skill_text:
+            guide = section(self.skill_text, optional_heading)
+            self.assertIn("`0.8.1`", guide)
+            self.assertIn("Range download is the default", guide)
+            self.assertIn("Tools/list alone cannot establish", guide)
+            self.assertIn("regenerate a saved", guide)
+
     def test_current_smedc_contract_is_documented(self) -> None:
         expected_terms = [
             "smedc-mcp",
